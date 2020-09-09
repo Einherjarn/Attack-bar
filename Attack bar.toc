@@ -4,5 +4,5 @@
 ## Notes: Displays a progress bar for your attack speed
 
 ## SavedVariables: abar
-## SavedVariablesPerCharacter: abarop
+## SavedVariablesPerCharacter: abarop abarbs
 Attackbar.xml
