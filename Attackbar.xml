@@ -91,6 +91,14 @@
      </Onload>
 	</Scripts>
 </GameTooltip>
+<GameTooltip name="Abar_ScanTooltip" hidden="true" inherits="GameTooltipTemplate">
+	<Scripts>
+     <Onload>
+       this:SetOwner(this, "ANCHOR_NONE");
+	   Abar_ScanLoad()
+     </Onload>
+	</Scripts>
+</GameTooltip>
 
   <StatusBar name="AbarBar" hidden="true" drawLayer="BORDER" parent="UIParent" virtual="true" toplevel="true">
 		<Size>

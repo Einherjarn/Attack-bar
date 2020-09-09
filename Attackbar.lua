@@ -111,6 +111,15 @@ function Abar_loaded()
 	Abar_OhText:SetJustifyH("Left")
 	ebar_VL()
 end
+
+function Abar_ScanLoad()
+	--DEFAULT_CHAT_FRAME:AddMessage("Abar Scan Loaded");
+	Abar_ScanTooltip:SetOwner(WorldFrame)
+	Abar_ScanTooltip:AddFontStrings(
+	Abar_ScanTooltip:CreateFontString( "$parentTextLeft1", nil, "GameTooltipText" ),
+	Abar_ScanTooltip:CreateFontString( "$parentTextRight1", nil, "GameTooltipText" ) );
+end
+
 function Abar_chat(msg)
 	msg = strlower(msg)
 	if msg == "fix" then
@@ -351,22 +360,24 @@ function Abar_UpdateAlways()
 		end
 	end
 	if(abarbs and UnitAffectingCombat("player")) then
-		rbcworkaround = GameTooltip
-		rbcworkaround:SetOwner(WorldFrame)
-		rbcworkaroundtext = GameTooltipTextLeft1
 		local bsfound = false;
+		Abar_ScanTooltip:SetOwner(WorldFrame)
+		-- Abar_ScanTooltip:AddFontStrings(
+		-- Abar_ScanTooltip:CreateFontString( "$parentTextLeft1", nil, "GameTooltipText" ),
+		-- Abar_ScanTooltip:CreateFontString( "$parentTextRight1", nil, "GameTooltipText" ) );
 		for i=1,32 do
-			rbcworkaround:SetUnitBuff("player",i)
-			if rbcworkaroundtext:GetText() then 
-				buff = trim(rbcworkaroundtext:GetText())
+			Abar_ScanTooltip:SetUnitBuff("player",i)
+			Abar_ScanTooltiptext = Abar_ScanTooltipTextLeft1
+			if Abar_ScanTooltiptext:GetText() then 
+				buff = trim(Abar_ScanTooltiptext:GetText())
 				if(buff == "Battle Shout") then
 					bsfound = true;
 					ABG_RemoveOverlay(ABI_ButtonFromID(51))
 				end
-				rbcworkaround:ClearLines()
+				Abar_ScanTooltip:ClearLines()
 			end
 		end
-		rbcworkaround:Hide()
+		Abar_ScanTooltip:Hide()
 		if(bsfound == false) then
 			ABG_AddOverlay(ABI_ButtonFromID(51))
 		end
