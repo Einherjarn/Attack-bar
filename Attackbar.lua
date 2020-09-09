@@ -373,6 +373,8 @@ function Abar_UpdateAlways()
 				if(buff == "Battle Shout") then
 					bsfound = true;
 					ABG_RemoveOverlay(ABI_ButtonFromID(51))
+					Abar_ScanTooltip:ClearLines()
+					break
 				end
 				Abar_ScanTooltip:ClearLines()
 			end
