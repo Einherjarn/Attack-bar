@@ -101,6 +101,9 @@ function Abar_loaded()
 	if abarop == nil then
 		abarop=false
 	end
+	if abarbs == nil then
+		abarbs=false
+	end
 	
 	Abar_Mhr:SetPoint("LEFT",Abar_Frame,"TOPLEFT",6,-13)
 	Abar_Oh:SetPoint("LEFT",Abar_Frame,"TOPLEFT",6,-35)
@@ -141,6 +144,10 @@ function Abar_chat(msg)
 	elseif msg=="op" then
 		abarop = not(abarop)
 		DEFAULT_CHAT_FRAME:AddMessage('Overpower highlight is'.. Abar_Boo(abarop));
+		DEFAULT_CHAT_FRAME:AddMessage("this is a custom hacky implementation, and will not work without the appropriate setup");
+	elseif msg=="bs" then
+		abarbs = not(abarbs)
+		DEFAULT_CHAT_FRAME:AddMessage('Battleshout highlight is'.. Abar_Boo(abarbs));
 		DEFAULT_CHAT_FRAME:AddMessage("this is a custom hacky implementation, and will not work without the appropriate setup");
 	else
 		DEFAULT_CHAT_FRAME:AddMessage('use any of these to control Abar:');
@@ -198,12 +205,18 @@ end
 end
 
 function Abar_reset()
-pont=0.000
-pofft= 0.000
-ont=0.000
-offt= 0.000
-onid=0
-offid=0
+	pont=0.000
+	pofft= 0.000
+	ont=0.000
+	offt= 0.000
+	onid=0
+	offid=0
+end
+
+function Abar_leftcombat()
+	if(abarbs) then
+		ABG_RemoveOverlay(ABI_ButtonFromID(51))
+	end
 end
 
 function Abar_op()
@@ -216,6 +229,7 @@ end
 function Abar_event(event)
 	if (event=="CHAT_MSG_COMBAT_SELF_MISSES" or event=="CHAT_MSG_COMBAT_SELF_HITS") and abar.h2h == true then Abar_selfhit(arg1) end
 	if event=="PLAYER_LEAVE_COMBAT" then Abar_reset() end
+	if event=="PLAYER_REGEN_ENABLED" then Abar_leftcombat() end
 	if event == "VARIABLES_LOADED" then Abar_loaded() end
 	if event == "CHAT_MSG_SPELL_SELF_DAMAGE" then Abar_spellhit(arg1) end
 	if (event == "UNIT_INVENTORY_CHANGED" and (not UnitAffectingCombat("player"))) then abar_swapweps() end
@@ -336,80 +350,104 @@ function Abar_UpdateAlways()
 			end
 		end
 	end
+	if(abarbs and UnitAffectingCombat("player")) then
+		rbcworkaround = GameTooltip
+		rbcworkaround:SetOwner(WorldFrame)
+		rbcworkaroundtext = GameTooltipTextLeft1
+		local bsfound = false;
+		for i=1,32 do
+			rbcworkaround:SetUnitBuff("player",i)
+			if rbcworkaroundtext:GetText() then 
+				buff = trim(rbcworkaroundtext:GetText())
+				if(buff == "Battle Shout") then
+					bsfound = true;
+					ABG_RemoveOverlay(ABI_ButtonFromID(51))
+				end
+				rbcworkaround:ClearLines()
+			end
+		end
+		rbcworkaround:Hide()
+		if(bsfound == false) then
+			ABG_AddOverlay(ABI_ButtonFromID(51))
+		end
+	end
+end
+
+function trim(s) -- apparently some blizzard tooltip names for buffs have trailing spaces
+  return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
 end
 	
 function Abar_Update()
-
-if this.type=="Target" then
-	asp = UnitAttackSpeed("target")
-	hd,ld = UnitDamage("target")
-	hd,ld= hd-math.mod(hd,1),ld-math.mod(ld,1)
-	abar_weapon = "mob"
-elseif this.type==("Main") then
-	asp,offs = UnitAttackSpeed("player")
-	hd,ld = UnitDamage("player")
-	hd,ld= hd-math.mod(hd,1),ld-math.mod(ld,1)
-	if GetInventoryItemLink("player", GetInventorySlotInfo("MainHandSlot")) then
-		_,_,abar_weapon = string.find((GetInventoryItemLink("player", GetInventorySlotInfo("MainHandSlot"))),"(item:%d+)")
+	if this.type=="Target" then
+		asp = UnitAttackSpeed("target")
+		hd,ld = UnitDamage("target")
+		hd,ld= hd-math.mod(hd,1),ld-math.mod(ld,1)
+		abar_weapon = "mob"
+	elseif this.type==("Main") then
+		asp,offs = UnitAttackSpeed("player")
+		hd,ld = UnitDamage("player")
+		hd,ld= hd-math.mod(hd,1),ld-math.mod(ld,1)
+		if GetInventoryItemLink("player", GetInventorySlotInfo("MainHandSlot")) then
+			_,_,abar_weapon = string.find((GetInventoryItemLink("player", GetInventorySlotInfo("MainHandSlot"))),"(item:%d+)")
+		else
+			asp = 2
+			abar_weapon = "unarmed"
+		end
+	elseif this.type==("Off") then
+		ons,asp = UnitAttackSpeed("player")
+		_,_,hd,ld = UnitDamage("player")
+		hd,ld= hd-math.mod(hd,1),ld-math.mod(ld,1)
+		if GetInventoryItemLink("player", GetInventorySlotInfo("SecondaryHandSlot")) then
+			_,_,abar_weapon = string.find((GetInventoryItemLink("player", GetInventorySlotInfo("SecondaryHandSlot"))),"(item:%d+)")
+		else
+			asp = this.oldaspd
+			abar_weapon = Abar_Oh.wep
+		end
 	else
-		asp = 2
-		abar_weapon = "unarmed"
+		asp,hd,ld =UnitRangedDamage("player")
+		hd,ld= hd-math.mod(hd,1),ld-math.mod(ld,1)
 	end
-elseif this.type==("Off") then
-	ons,asp = UnitAttackSpeed("player")
-	_,_,hd,ld = UnitDamage("player")
-	hd,ld= hd-math.mod(hd,1),ld-math.mod(ld,1)
-	if GetInventoryItemLink("player", GetInventorySlotInfo("SecondaryHandSlot")) then
-		_,_,abar_weapon = string.find((GetInventoryItemLink("player", GetInventorySlotInfo("SecondaryHandSlot"))),"(item:%d+)")
+
+	if (abar_weapon == this.wep) then
+		abar_aspd = asp-- - math.mod(asp,0.01)
 	else
-		asp = this.oldaspd
-		abar_weapon = Abar_Oh.wep
+		abar_aspd = this.oldaspd
 	end
-else
-	asp,hd,ld =UnitRangedDamage("player")
-	hd,ld= hd-math.mod(hd,1),ld-math.mod(ld,1)
-end
 
-if (abar_weapon == this.wep) then
-	abar_aspd = asp-- - math.mod(asp,0.01)
-else
-	abar_aspd = this.oldaspd
-end
+	local derptime = this.st+abar_aspd
+	local ttime = GetTime()
+	--local left = 0.00
+	tSpark=getglobal(this:GetName().. "Spark")
+	tText=getglobal(this:GetName().. "Tmr")
+	tInfo=getglobal(this:GetName().."Text")
 
-local derptime = this.st+abar_aspd
-local ttime = GetTime()
---local left = 0.00
-tSpark=getglobal(this:GetName().. "Spark")
-tText=getglobal(this:GetName().. "Tmr")
-tInfo=getglobal(this:GetName().."Text")
-
-if abar.timer==true then
-	--left = (derptime-GetTime()) - (math.mod((derptime-GetTime()),.01))
-	this.left = ((derptime-GetTime()) - ((derptime-GetTime())*this.attpercent)) - (math.mod(((derptime-GetTime()) - ((derptime-GetTime())*this.attpercent)),.01))
-	if (not (this.oldaspd == abar_aspd)) and (abar_weapon == this.wep) then
-		this.attpercent = 1-(this.left/abar_aspd)
+	if abar.timer==true then
+		--left = (derptime-GetTime()) - (math.mod((derptime-GetTime()),.01))
+		this.left = ((derptime-GetTime()) - ((derptime-GetTime())*this.attpercent)) - (math.mod(((derptime-GetTime()) - ((derptime-GetTime())*this.attpercent)),.01))
+		if (not (this.oldaspd == abar_aspd)) and (abar_weapon == this.wep) then
+			this.attpercent = 1-(this.left/abar_aspd)
+		end
+	--	tText:SetText(this.txt.. "{"..left.."}")
+		tText:SetText("{"..this.left.."}")
+		tText:Show()
+	else
+			tText:Hide()
 	end
---	tText:SetText(this.txt.. "{"..left.."}")
-	tText:SetText("{"..this.left.."}")
-	tText:Show()
-else
-        tText:Hide()
-end
 
-this:SetValue(ttime)
-this:SetMinMaxValues(this.st,derptime)
+	this:SetValue(ttime)
+	this:SetMinMaxValues(this.st,derptime)
 
-if this.type == "Target" then
-	tInfo:SetText(this.type.."["..round(abar_aspd,2).."s]")
-else
-	tInfo:SetText(this.type.."["..round(abar_aspd,2).."s]("..hd.."-"..ld..")")
-end
-tSpark:SetPoint("CENTER", this, "LEFT", (ttime-this.st)/(derptime-this.st)*195, 2);
-this.oldaspd = abar_aspd
-if ttime>=derptime then 
-this:Hide() 
-tSpark:SetPoint("CENTER", this, "LEFT",195, 2);
-end
+	if this.type == "Target" then
+		tInfo:SetText(this.type.."["..round(abar_aspd,2).."s]")
+	else
+		tInfo:SetText(this.type.."["..round(abar_aspd,2).."s]("..hd.."-"..ld..")")
+	end
+	tSpark:SetPoint("CENTER", this, "LEFT", (ttime-this.st)/(derptime-this.st)*195, 2);
+	this.oldaspd = abar_aspd
+	if ttime>=derptime then 
+	this:Hide() 
+	tSpark:SetPoint("CENTER", this, "LEFT",195, 2);
+	end
 
 end
 function Abar_Mhrs(bartime,text,r,g,b,bartype)

@@ -6,6 +6,7 @@
 			this:RegisterEvent("CHAT_MSG_COMBAT_SELF_MISSES");
 			this:RegisterEvent("CHAT_MSG_COMBAT_SELF_HITS");
 			this:RegisterEvent("PLAYER_LEAVE_COMBAT")
+			this:RegisterEvent("PLAYER_REGEN_ENABLED")
 			this:RegisterEvent("VARIABLES_LOADED")
 			this:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
 			this:RegisterEvent("CHAT_MSG_SPELL_SELF_BUFF")
